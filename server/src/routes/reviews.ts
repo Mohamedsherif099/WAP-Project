@@ -2,12 +2,14 @@
 
 import express, { Router, RequestHandler } from 'express';
 import {
-    getProductReviews,
+    getAllReviews,
+    getReviewById,
     createReview,
+    updateReview,
     deleteReview,
+    getProductReviews,
     markReviewHelpful
 } from '../controllers/reviewController.js';
-import Review from '../models/Review.js';
 
 const router: Router = express.Router();
 
@@ -27,14 +29,7 @@ const router: Router = express.Router();
  *               items:
  *                 $ref: '#/components/schemas/Review'
  */
-router.get('/', (async (req, res) => {
-    try {
-        const reviews = await Review.find().populate('product');
-        res.json(reviews);
-    } catch (error) {
-        res.status(500).json({ message: 'Error fetching reviews' });
-    }
-}) as RequestHandler);
+router.get('/', getAllReviews as RequestHandler);
 
 /**
  * @swagger
@@ -59,17 +54,7 @@ router.get('/', (async (req, res) => {
  *       404:
  *         description: Review not found
  */
-router.get('/:id', (async (req, res) => {
-    try {
-        const review = await Review.findById(req.params.id).populate('product');
-        if (!review) {
-            return res.status(404).json({ message: 'Review not found' });
-        }
-        res.json(review);
-    } catch (error) {
-        res.status(500).json({ message: 'Error fetching review' });
-    }
-}) as RequestHandler);
+router.get('/:id', getReviewById as RequestHandler);
 
 /**
  * @swagger
@@ -107,15 +92,7 @@ router.get('/:id', (async (req, res) => {
  *             schema:
  *               $ref: '#/components/schemas/Review'
  */
-router.post('/', (async (req, res) => {
-    try {
-        const review = new Review(req.body);
-        await review.save();
-        res.status(201).json(review);
-    } catch (error) {
-        res.status(400).json({ message: 'Error creating review' });
-    }
-}) as RequestHandler);
+router.post('/', createReview as RequestHandler);
 
 /**
  * @swagger
@@ -155,21 +132,7 @@ router.post('/', (async (req, res) => {
  *       404:
  *         description: Review not found
  */
-router.put('/:id', (async (req, res) => {
-    try {
-        const review = await Review.findByIdAndUpdate(
-            req.params.id,
-            req.body,
-            { new: true }
-        );
-        if (!review) {
-            return res.status(404).json({ message: 'Review not found' });
-        }
-        res.json(review);
-    } catch (error) {
-        res.status(400).json({ message: 'Error updating review' });
-    }
-}) as RequestHandler);
+router.put('/:id', updateReview as RequestHandler);
 
 /**
  * @swagger
@@ -190,28 +153,52 @@ router.put('/:id', (async (req, res) => {
  *       404:
  *         description: Review not found
  */
-router.delete('/:id', (async (req, res) => {
-    try {
-        const review = await Review.findByIdAndDelete(req.params.id);
-        if (!review) {
-            return res.status(404).json({ message: 'Review not found' });
-        }
-        res.json({ message: 'Review deleted successfully' });
-    } catch (error) {
-        res.status(500).json({ message: 'Error deleting review' });
-    }
-}) as RequestHandler);
+router.delete('/:id', deleteReview as RequestHandler);
 
-// GET /api/reviews/product/:productId - Get reviews for a product
-router.get('/product/:productId', getProductReviews);
+/**
+ * @swagger
+ * /api/reviews/product/{productId}:
+ *   get:
+ *     summary: Get reviews for a product
+ *     tags: [Reviews]
+ *     parameters:
+ *       - in: path
+ *         name: productId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Product ID
+ *     responses:
+ *       200:
+ *         description: List of reviews for the product
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Review'
+ */
+router.get('/product/:productId', getProductReviews as RequestHandler);
 
-// POST /api/reviews - Create a review
-router.post('/', createReview);
+/**
+ * @swagger
+ * /api/reviews/{id}/helpful:
+ *   post:
+ *     summary: Mark a review as helpful
+ *     tags: [Reviews]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Review ID
+ *     responses:
+ *       200:
+ *         description: Review marked as helpful
+ *       404:
+ *         description: Review not found
+ */
+router.post('/:id/helpful', markReviewHelpful as RequestHandler);
 
-// DELETE /api/reviews/:id - Delete a review
-router.delete('/:id', deleteReview);
-
-// POST /api/reviews/:id/helpful - Mark a review as helpful
-router.post('/:id/helpful', markReviewHelpful);
-
-export default router; 
+export default router;

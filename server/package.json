@@ -7,7 +7,7 @@
     "scripts": {
         "start": "node dist/app.js",
         "dev": "tsx watch src/app.ts",
-        "build": "npm install && rm -rf dist && tsc",
+        "build": "npm install && rm -rf dist && tsc --skipLibCheck",
         "seed": "tsx src/seed.ts",
         "test": "echo \"Error: no test specified\" && exit 1"
     },
