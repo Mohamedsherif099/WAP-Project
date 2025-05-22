@@ -1,11 +1,11 @@
 services:
   - type: web
-    name: reviewme-client
+    name: talabat-client
     env: node
     buildCommand: npm install && npm run build
     startCommand: npm run preview
     envVars:
       - key: VITE_API_URL
-        value: https://reviewme-server.onrender.com/api
+        value: https://talabat-server.onrender.com/api
       - key: NODE_ENV
         value: production
