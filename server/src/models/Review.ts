@@ -39,4 +39,6 @@ const reviewSchema = new Schema<IReview>({
 // reviewSchema.index({ username: 1, product: 1 }, { unique: true });
 
 const Review = mongoose.model<IReview>('Review', reviewSchema);
+Review.collection.dropIndex('username_1_product_1').catch(() => {
+});
 export default Review; 

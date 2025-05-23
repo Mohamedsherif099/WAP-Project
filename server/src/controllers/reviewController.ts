@@ -51,9 +51,9 @@ export const createReview = async (req: Request, res: Response) => {
 
         res.status(201).json(review);
     } catch (error: any) {
-        if (error.code === 11000) {
-            return res.status(400).json({ message: 'You have already reviewed this product' });
-        }
+        // if (error.code === 11000) {
+        //     return res.status(400).json({ message: 'You have already reviewed this product' });
+        // }
         res.status(400).json({ message: 'Error creating review' });
     }
 };
