@@ -33,7 +33,7 @@ export interface CreateReviewData {
 
 export const getProductReviews = async (productId: string) => {
     const response = await client.get<{ reviews: Review[] }>(`/reviews/product/${productId}`);
-    return response.data.reviews;
+    return response.data;
 };
 
 export const createReview = async (reviewData: CreateReviewData) => {
