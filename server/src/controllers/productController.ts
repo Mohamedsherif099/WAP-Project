@@ -5,8 +5,15 @@ import { SortOrder } from 'mongoose';
 // Get all products with filtering and pagination
 export const getProducts = async (req: Request, res: Response) => {
     try {
-        const { category, sort, page = 1, limit = 10 } = req.query;
-        const query = category ? { category } : {};
+        const { category, sort, page = 1, limit = 10, search } = req.query;
+
+        let query: any = {};
+        if (category) {
+            query.category = category;
+        }
+        if (search) {
+            query.$text = { $search: search as string };
+        }
 
         const sortOptions: Record<string, { [key: string]: SortOrder }> = {
             'price-asc': { price: 1 },
@@ -15,8 +22,13 @@ export const getProducts = async (req: Request, res: Response) => {
             'newest': { createdAt: -1 }
         };
 
+        // If searching, add text score to sort
+        const sortQuery = search
+            ? { score: { $meta: "textScore" }, ...sortOptions[sort as string] }
+            : sortOptions[sort as string] || { createdAt: -1 };
+
         const products = await Product.find(query)
-            .sort(sortOptions[sort as string] || { createdAt: -1 })
+            .sort(sortQuery)
             .limit(Number(limit))
             .skip((Number(page) - 1) * Number(limit));
 
@@ -28,6 +40,7 @@ export const getProducts = async (req: Request, res: Response) => {
             currentPage: Number(page)
         });
     } catch (error) {
+        console.error('Error fetching products:', error);
         res.status(500).json({ message: 'Server error' });
     }
 };
