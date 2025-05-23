@@ -35,8 +35,8 @@ const reviewSchema = new Schema<IReview>({
     timestamps: true
 });
 
-// Ensure one review per username per product
-reviewSchema.index({ username: 1, product: 1 }, { unique: true });
+ // Ensure one review per username per product
+// reviewSchema.index({ username: 1, product: 1 }, { unique: true });
 
 const Review = mongoose.model<IReview>('Review', reviewSchema);
 export default Review; 

@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import Review from '../models/Review.js';
 import Product from '../models/Product.js';
+import { IReview } from '../types/index.js';
 
 // Get all reviews
 export const getAllReviews = async (req: Request, res: Response) => {
@@ -25,13 +26,34 @@ export const getReviewById = async (req: Request, res: Response) => {
     }
 };
 
+// Helper function to update product rating stats
+const updateProductRatingStats = async (productId: string) => {
+    const reviews = await Review.find({ product: productId });
+    const totalReviews = reviews.length;
+    const averageRating = totalReviews > 0
+        ? reviews.reduce((sum, review) => sum + review.rating, 0) / totalReviews
+        : 0;
+
+    await Product.findByIdAndUpdate(productId, {
+        averageRating,
+        totalReviews
+    });
+};
+
 // Create a new review
 export const createReview = async (req: Request, res: Response) => {
     try {
         const review = new Review(req.body);
         await review.save();
+
+        // Update product rating stats
+        await updateProductRatingStats(req.body.product);
+
         res.status(201).json(review);
-    } catch (error) {
+    } catch (error: any) {
+        if (error.code === 11000) {
+            return res.status(400).json({ message: 'You have already reviewed this product' });
+        }
         res.status(400).json({ message: 'Error creating review' });
     }
 };
@@ -43,10 +65,14 @@ export const updateReview = async (req: Request, res: Response) => {
             req.params.id,
             req.body,
             { new: true }
-        );
+        ) as IReview;
         if (!review) {
             return res.status(404).json({ message: 'Review not found' });
         }
+
+        // Update product rating stats
+        await updateProductRatingStats(review.product as string);
+
         res.json(review);
     } catch (error) {
         res.status(400).json({ message: 'Error updating review' });
@@ -56,10 +82,14 @@ export const updateReview = async (req: Request, res: Response) => {
 // Delete a review
 export const deleteReview = async (req: Request, res: Response) => {
     try {
-        const review = await Review.findByIdAndDelete(req.params.id);
+        const review = await Review.findByIdAndDelete(req.params.id) as IReview;
         if (!review) {
             return res.status(404).json({ message: 'Review not found' });
         }
+
+        // Update product rating stats
+        await updateProductRatingStats(review.product as string);
+
         res.json({ message: 'Review deleted successfully' });
     } catch (error) {
         res.status(500).json({ message: 'Error deleting review' });
