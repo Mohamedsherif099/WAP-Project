@@ -17,6 +17,7 @@ export interface ProductFilters {
     sort?: 'newest' | 'price-asc' | 'price-desc' | 'rating-desc';
     page?: number;
     limit?: number;
+    search?: string;
 }
 
 export interface ProductsResponse {

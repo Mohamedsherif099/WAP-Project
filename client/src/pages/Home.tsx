@@ -35,8 +35,8 @@ export default function Home() {
     });
 
     const { data, isLoading, error } = useQuery(
-        ['products', filters],
-        () => getProducts(filters),
+        ['products', filters, searchQuery],
+        () => getProducts({ ...filters, search: searchQuery }),
         {
             keepPreviousData: true,
             staleTime: 5 * 60 * 1000, // Data stays fresh for 5 minutes
@@ -47,7 +47,7 @@ export default function Home() {
 
     const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
         setSearchQuery(event.target.value);
-        // TODO: Implement search functionality
+        setFilters(prev => ({ ...prev, page: 1 })); // Reset to first page on search
     };
 
     const handleCategoryClick = (category: string) => {
